@@ -1,0 +1,40 @@
+name: Build Pinscape Pico Firmware
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Instalar dependencias de compilacion (ARM GCC y CMake)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential python3 git
+
+      - name: Descargar Pico SDK
+        run: |
+          git clone --depth 1 --branch 2.0.0 https://github.com/raspberrypi/pico-sdk.git /tmp/pico-sdk
+          cd /tmp/pico-sdk
+          git submodule update --init
+
+      - name: Compilar Firmware
+        env:
+          PICO_SDK_PATH: /tmp/pico-sdk
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+          make -j$(nproc)
+
+      - name: Guardar archivo .uf2 resultante
+        uses: actions/upload-artifact@v4
+        with:
+          name: PinscapePico-Firmware
+          path: build/**/*.uf2
