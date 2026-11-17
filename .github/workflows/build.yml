@@ -32,17 +32,11 @@ jobs:
           if [ -z "$FW_DIR" ]; then
             FW_DIR="."
           fi
-          echo "Directorio del firmware principal: $FW_DIR"
-          
           cd "$FW_DIR"
           mkdir -p build
           cd build
           cmake -DPICO_SDK_PATH=/opt/pico-sdk -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
           make -j$(nproc)
-          
-          echo "=== ARCHIVOS GENERADOS EN BUILD ==="
-          find . -type f
-          
           mkdir -p /tmp/firmware_output
           find . -name "*.uf2" -exec cp {} /tmp/firmware_output/ \;
 
@@ -50,7 +44,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: PinscapePico-Firmware
-          path: |
-            /tmp/firmware_output/*.uf2
-            **/build/**/*.uf2
-            **/*.uf2
+          path: /tmp/firmware_output/*.uf2
