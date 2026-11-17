@@ -28,17 +28,17 @@ jobs:
         env:
           PICO_SDK_PATH: /opt/pico-sdk
         run: |
-          # Buscar de forma inteligente la carpeta exacta del firmware de la Pico
-          FW_DIR=$(dirname "$(grep -rl "pico_sdk_init" . | head -n 1)")
+          # Buscamos el directorio principal del firmware excluyendo carpetas secundarias como ButtonLatencyTester
+          FW_DIR=$(dirname "$(find . -name "CMakeLists.txt" | grep -v "ButtonLatencyTester" | head -n 1)")
           if [ -z "$FW_DIR" ]; then
             FW_DIR="."
           fi
-          echo "Directorio del firmware de la Pico: $FW_DIR"
+          echo "Directorio del firmware principal: $FW_DIR"
           
           cd "$FW_DIR"
           mkdir -p build
           cd build
-          cmake -DPICO_SDK_PATH=/opt/pico-sdk ..
+          cmake -DPICO_SDK_PATH=/opt/pico-sdk -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
           make -j$(nproc)
 
       - name: Guardar archivo .uf2
