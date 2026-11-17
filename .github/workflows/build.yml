@@ -39,11 +39,13 @@ jobs:
           cd build
           cmake -DPICO_SDK_PATH=/opt/pico-sdk -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
           make -j$(nproc)
+          
+          # Copiar todos los archivos .uf2 encontrados a una carpeta limpia para asegurar la subida
+          mkdir -p /tmp/firmware_output
+          find . -name "*.uf2" -exec cp {} /tmp/firmware_output/ \;
 
       - name: Guardar archivo .uf2
         uses: actions/upload-artifact@v4
         with:
           name: PinscapePico-Firmware
-          path: |
-            **/*.uf2
-            **/build/*.uf2
+          path: /tmp/firmware_output/*.uf2
