@@ -1,4 +1,4 @@
-name: Build Pinscape Pico Firmware
+name: Build Pinscape Pico Firmware v2
 
 on:
   workflow_dispatch:
