@@ -19,10 +19,10 @@ jobs:
           sudo apt-get install -y cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential python3 git libusb-1.0-0-dev
 
       - name: Configurar Pico SDK
-    run: |
-      git clone --depth 1 --branch 2.0.0 https://github.com/raspberrypi/pico-sdk.git /opt/pico-sdk
-      cd /opt/pico-sdk
-      git submodule update --init
+        run: |
+          git clone --depth 1 --branch 2.0.0 https://github.com/raspberrypi/pico-sdk.git /opt/pico-sdk
+          cd /opt/pico-sdk
+          git submodule update --init
 
       - name: Compilar Firmware de la Pico
         env:
@@ -40,11 +40,9 @@ jobs:
           cmake -DPICO_SDK_PATH=/opt/pico-sdk -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
           make -j$(nproc)
           
-          # Mostrar todos los archivos generados para depuración en el log
           echo "=== ARCHIVOS GENERADOS EN BUILD ==="
           find . -type f
           
-          # Copiar cualquier archivo .uf2 o binario a una carpeta central de salida
           mkdir -p /tmp/firmware_output
           find . -name "*.uf2" -exec cp {} /tmp/firmware_output/ \;
 
