@@ -16,7 +16,7 @@ jobs:
       - name: Instalar herramientas de compilación
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential python3 git
+          sudo apt-get install -y cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential python3 git libusb-1.0-0-dev
 
       - name: Configurar Pico SDK
         run: |
@@ -28,7 +28,6 @@ jobs:
         env:
           PICO_SDK_PATH: /opt/pico-sdk
         run: |
-          # Buscar la carpeta que contiene el archivo CMakeLists.txt principal
           PROJECT_DIR=$(dirname $(find . -name "CMakeLists.txt" | head -n 1))
           echo "Directorio del proyecto: $PROJECT_DIR"
           
