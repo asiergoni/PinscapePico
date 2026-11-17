@@ -16,7 +16,7 @@ jobs:
       - name: Instalar herramientas de compilación
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential python3 git
+          sudo apt-get install -y cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential python3 git libusb-1.0-0-dev
 
       - name: Configurar Pico SDK
         run: |
@@ -28,8 +28,15 @@ jobs:
         env:
           PICO_SDK_PATH: /opt/pico-sdk
         run: |
-          # Compilamos directamente desde la raíz del repositorio donde está el firmware principal
-          mkdir build
+          # Buscar de forma inteligente la carpeta exacta del firmware de la Pico
+          FW_DIR=$(dirname "$(grep -rl "pico_sdk_init" . | head -n 1)")
+          if [ -z "$FW_DIR" ]; then
+            FW_DIR="."
+          fi
+          echo "Directorio del firmware de la Pico: $FW_DIR"
+          
+          cd "$FW_DIR"
+          mkdir -p build
           cd build
           cmake -DPICO_SDK_PATH=/opt/pico-sdk ..
           make -j$(nproc)
@@ -38,4 +45,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: PinscapePico-Firmware
-          path: build/**/*.uf2
+          path: '**/build/**/*.uf2'
