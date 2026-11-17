@@ -1,4 +1,4 @@
-name: Build Pinscape Pico Firmware v3
+name: Build Pinscape Pico Firmware v4
 
 on:
   workflow_dispatch:
@@ -40,15 +40,16 @@ jobs:
           cmake -DPICO_SDK_PATH=/opt/pico-sdk -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
           make -j$(nproc)
           
-          # Crear una carpeta limpia para artefactos y comprimirla directamente en un ZIP
-          mkdir -p /tmp/artifact
-          find . -name "*.uf2" -exec cp {} /tmp/artifact/ \;
+          # Copiar el archivo .uf2 a una carpeta local dentro del workspace del repositorio
+          cd ../../../
+          mkdir -p firmware_output
+          find . -name "*.uf2" -exec cp {} firmware_output/ \;
           
           echo "=== ARCHIVOS EN EL ARTEFACTO ==="
-          ls -la /tmp/artifact/
+          ls -la firmware_output/
 
       - name: Subir artefacto ZIP
         uses: actions/upload-artifact@v4
         with:
           name: PinscapePico-Firmware
-          path: /tmp/artifact/*
+          path: firmware_output/
