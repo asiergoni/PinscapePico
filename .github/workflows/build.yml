@@ -1,4 +1,3 @@
-YAML
 name: Build Pinscape Pico Firmware
 
 on:
