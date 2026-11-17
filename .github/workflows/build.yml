@@ -8,41 +8,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Clonar repositorio
+      - name: Clonar repositorio y submódulos
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Instalar dependencias de compilacion (ARM GCC y CMake)
+      - name: Instalar herramientas de compilación
         run: |
           sudo apt-get update
           sudo apt-get install -y cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential python3 git
 
-      - name: Descargar Pico SDK
+      - name: Configurar Pico SDK
         run: |
-          git clone --depth 1 --branch 2.0.0 https://github.com/raspberrypi/pico-sdk.git /tmp/pico-sdk
-          cd /tmp/pico-sdk
+          git clone --depth 1 --branch 2.0.0 https://github.com/raspberrypi/pico-sdk.git /opt/pico-sdk
+          cd /opt/pico-sdk
           git submodule update --init
 
-      - name: Buscar CMakeLists.txt y Compilar
+      - name: Compilar proyecto
         env:
-          PICO_SDK_PATH: /tmp/pico-sdk
+          PICO_SDK_PATH: /opt/pico-sdk
         run: |
-          # Muestra la estructura para verificar dónde está el CMakeLists.txt
-          find . -name "CMakeLists.txt"
+          # Buscar la carpeta que contiene el archivo CMakeLists.txt principal
+          PROJECT_DIR=$(dirname $(find . -name "CMakeLists.txt" | head -n 1))
+          echo "Directorio del proyecto: $PROJECT_DIR"
           
-          # Si el CMakeLists.txt está en una subcarpeta, entra en ella. 
-          # Por defecto intentamos compilar desde la raíz o buscamos el directorio que lo contiene.
-          BUILD_DIR=$(dirname $(find . -name "CMakeLists.txt" | head -n 1))
-          echo "Directorio de compilación detectado: $BUILD_DIR"
-          
-          cd "$BUILD_DIR"
+          cd "$PROJECT_DIR"
           mkdir build
           cd build
-          cmake ..
+          cmake -DPICO_SDK_PATH=/opt/pico-sdk ..
           make -j$(nproc)
 
-      - name: Guardar archivo .uf2 resultante
+      - name: Guardar archivo .uf2
         uses: actions/upload-artifact@v4
         with:
           name: PinscapePico-Firmware
