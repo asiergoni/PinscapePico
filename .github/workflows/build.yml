@@ -24,10 +24,19 @@ jobs:
           cd /tmp/pico-sdk
           git submodule update --init
 
-      - name: Compilar Firmware
+      - name: Buscar CMakeLists.txt y Compilar
         env:
           PICO_SDK_PATH: /tmp/pico-sdk
         run: |
+          # Muestra la estructura para verificar dónde está el CMakeLists.txt
+          find . -name "CMakeLists.txt"
+          
+          # Si el CMakeLists.txt está en una subcarpeta, entra en ella. 
+          # Por defecto intentamos compilar desde la raíz o buscamos el directorio que lo contiene.
+          BUILD_DIR=$(dirname $(find . -name "CMakeLists.txt" | head -n 1))
+          echo "Directorio de compilación detectado: $BUILD_DIR"
+          
+          cd "$BUILD_DIR"
           mkdir build
           cd build
           cmake ..
@@ -37,4 +46,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: PinscapePico-Firmware
-          path: build/**/*.uf2
+          path: '**/build/**/*.uf2'
