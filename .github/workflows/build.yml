@@ -1,4 +1,4 @@
-name: Build firmware 10.3
+name: Build firmware 10.4
 on:
   workflow_dispatch:
   push:
@@ -16,18 +16,19 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y cmake gcc-arm-none-eabi \
             libnewlib-arm-none-eabi build-essential \
-            libstdc++-arm-none-eabi-newlib
+            libstdc++-arm-none-eabi-newlib \
+            libusb-1.0-0-dev pkg-config
 
       - name: Descargar Pico SDK
         run: |
-          git clone --recurse-submodules https://github.com/mjrgh/pico-sdk-2.1.0.git $HOME/pico-sdk
-          echo "PICO_SDK_PATH=$HOME/pico-sdk" >> $GITHUB_ENV
+          git clone --recurse-submodules https://github.com/mjrgh/pico-sdk-2.1.0.git $HOME/pico-sdk-bundle
+          echo "PICO_SDK_PATH=$HOME/pico-sdk-bundle/pico-sdk" >> $GITHUB_ENV
 
       - name: Compilar pioasm
         run: |
           ls $PICO_SDK_PATH
           git clone --depth 1 --branch 2.1.0 https://github.com/raspberrypi/pico-sdk.git $RUNNER_TEMP/pico-sdk-official
-          cmake -S $RUNNER_TEMP/pico-sdk-official/tools/pioasm -B $RUNNER_TEMP/pioasm-build
+          cmake -S $RUNNER_TEMP/pico-sdk-official/tools/pioasm -B $RUNNER_TEMP/pioasm-build -DCMAKE_CXX_FLAGS="-include cstdint"
           cmake --build $RUNNER_TEMP/pioasm-build -j4
           mkdir -p $PICO_SDK_PATH/tools/pioasm
           cp $RUNNER_TEMP/pioasm-build/pioasm $PICO_SDK_PATH/tools/pioasm/pioasm
