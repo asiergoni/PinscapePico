@@ -1,4 +1,4 @@
-name: Build Pinscape Pico Firmware 8
+name: Build Pinscape Pico Firmware 9
 
 on:
   workflow_dispatch:
@@ -24,6 +24,14 @@ jobs:
           cd /opt/pico-sdk
           git submodule update --init
 
+      - name: Compilar pioasm para el SDK
+        run: |
+          cd /opt/pico-sdk/tools/pioasm
+          mkdir -p build
+          cd build
+          cmake ..
+          make -j$(nproc)
+
       - name: Compilar y empaquetar firmware de la Pico
         env:
           PICO_SDK_PATH: /opt/pico-sdk
@@ -45,11 +53,9 @@ jobs:
           
           mkdir -p build
           cd build
-          # Añadimos banderas para tolerar cambios de sintaxis en herramientas nativas con GCC moderno
           cmake -DPICO_SDK_PATH=/opt/pico-sdk -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_CXX_FLAGS="-Wno-error=narrowing -std=gnu++17" ..
           make -j$(nproc)
           
-          # Copiar el archivo .uf2 resultante a la carpeta de salida
           cd ${{ github.workspace }}
           mkdir -p firmware_output
           echo "Buscando archivos .uf2 generados..."
