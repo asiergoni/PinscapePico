@@ -1,4 +1,4 @@
-name: Build Pinscape Pico Firmware 7
+name: Build Pinscape Pico Firmware 8
 
 on:
   workflow_dispatch:
@@ -16,20 +16,13 @@ jobs:
       - name: Instalar herramientas de compilación
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential python3 git libusb-1.0-0-dev
+          sudo apt-get install -y cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential python3 git libusb-1.0-0-dev g++
 
       - name: Configurar Pico SDK
         run: |
           git clone --depth 1 --branch 2.0.0 https://github.com/raspberrypi/pico-sdk.git /opt/pico-sdk
           cd /opt/pico-sdk
           git submodule update --init
-
-      - name: Compilar pioasm nativo del SDK
-        run: |
-          mkdir -p /opt/pico-sdk/tools/pioasm/build
-          cd /opt/pico-sdk/tools/pioasm/build
-          cmake ..
-          make -j$(nproc)
 
       - name: Compilar y empaquetar firmware de la Pico
         env:
@@ -52,7 +45,8 @@ jobs:
           
           mkdir -p build
           cd build
-          cmake -DPICO_SDK_PATH=/opt/pico-sdk -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
+          # Añadimos banderas para tolerar cambios de sintaxis en herramientas nativas con GCC moderno
+          cmake -DPICO_SDK_PATH=/opt/pico-sdk -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_CXX_FLAGS="-Wno-error=narrowing -std=gnu++17" ..
           make -j$(nproc)
           
           # Copiar el archivo .uf2 resultante a la carpeta de salida
