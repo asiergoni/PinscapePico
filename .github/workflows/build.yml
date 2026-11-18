@@ -1,4 +1,4 @@
-name: Build Pinscape Pico Firmware v4
+name: Build Pinscape Pico Firmware 5
 
 on:
   workflow_dispatch:
@@ -24,7 +24,7 @@ jobs:
           cd /opt/pico-sdk
           git submodule update --init
 
-      - name: Compilar y empaquetar firmware
+      - name: Compilar y localizar firmware
         env:
           PICO_SDK_PATH: /opt/pico-sdk
         run: |
@@ -40,15 +40,16 @@ jobs:
           cmake -DPICO_SDK_PATH=/opt/pico-sdk -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
           make -j$(nproc)
           
-          # Copiar el archivo .uf2 a una carpeta local dentro del workspace del repositorio
-          cd ../../../
+          # Regresar de forma absoluta a la raíz del workspace y copiar el .uf2
+          cd ${{ github.workspace }}
           mkdir -p firmware_output
-          find . -name "*.uf2" -exec cp {} firmware_output/ \;
+          echo "Buscando archivos .uf2 generados..."
+          find . -name "*.uf2" -type f -exec cp -v {} firmware_output/ \;
           
-          echo "=== ARCHIVOS EN EL ARTEFACTO ==="
+          echo "Contenido final de firmware_output:"
           ls -la firmware_output/
 
-      - name: Subir artefacto ZIP
+      - name: Subir artefacto
         uses: actions/upload-artifact@v4
         with:
           name: PinscapePico-Firmware
