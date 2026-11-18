@@ -1,4 +1,4 @@
-name: Build Pinscape Pico Firmware 6
+name: Build Pinscape Pico Firmware 7
 
 on:
   workflow_dispatch:
@@ -24,11 +24,17 @@ jobs:
           cd /opt/pico-sdk
           git submodule update --init
 
+      - name: Compilar pioasm nativo del SDK
+        run: |
+          mkdir -p /opt/pico-sdk/tools/pioasm/build
+          cd /opt/pico-sdk/tools/pioasm/build
+          cmake ..
+          make -j$(nproc)
+
       - name: Compilar y empaquetar firmware de la Pico
         env:
           PICO_SDK_PATH: /opt/pico-sdk
         run: |
-          # Forzar la búsqueda del CMakeLists.txt principal que usa el SDK de la Pico (excluyendo herramientas de PC)
           FW_DIR=""
           for d in $(find . -name "CMakeLists.txt" | grep -v "ButtonLatencyTester" | grep -v "CmdLineConfigTool"); do
             if grep -q "pico_sdk_init" "$d"; then
