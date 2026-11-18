@@ -1,4 +1,4 @@
-name: Build firmware 10.2
+name: Build firmware 10.3
 on:
   workflow_dispatch:
   push:
@@ -25,8 +25,11 @@ jobs:
 
       - name: Compilar pioasm
         run: |
-          cmake -S $PICO_SDK_PATH/tools/pioasm -B $RUNNER_TEMP/pioasm-build
+          ls $PICO_SDK_PATH
+          git clone --depth 1 --branch 2.1.0 https://github.com/raspberrypi/pico-sdk.git $RUNNER_TEMP/pico-sdk-official
+          cmake -S $RUNNER_TEMP/pico-sdk-official/tools/pioasm -B $RUNNER_TEMP/pioasm-build
           cmake --build $RUNNER_TEMP/pioasm-build -j4
+          mkdir -p $PICO_SDK_PATH/tools/pioasm
           cp $RUNNER_TEMP/pioasm-build/pioasm $PICO_SDK_PATH/tools/pioasm/pioasm
           ls -l $PICO_SDK_PATH/tools/pioasm/pioasm
 
