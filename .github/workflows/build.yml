@@ -1,4 +1,4 @@
-name: Build Pinscape Pico Firmware 5
+name: Build Pinscape Pico Firmware 6
 
 on:
   workflow_dispatch:
@@ -24,23 +24,32 @@ jobs:
           cd /opt/pico-sdk
           git submodule update --init
 
-      - name: Compilar y localizar firmware
+      - name: Compilar y empaquetar firmware de la Pico
         env:
           PICO_SDK_PATH: /opt/pico-sdk
         run: |
-          FW_DIR=$(dirname "$(find . -name "CMakeLists.txt" | grep -v "ButtonLatencyTester" | head -n 1)")
+          # Forzar la búsqueda del CMakeLists.txt principal que usa el SDK de la Pico (excluyendo herramientas de PC)
+          FW_DIR=""
+          for d in $(find . -name "CMakeLists.txt" | grep -v "ButtonLatencyTester" | grep -v "CmdLineConfigTool"); do
+            if grep -q "pico_sdk_init" "$d"; then
+              FW_DIR=$(dirname "$d")
+              break
+            fi
+          done
+
           if [ -z "$FW_DIR" ]; then
             FW_DIR="."
           fi
-          echo "Directorio del firmware principal: $FW_DIR"
-          
+
+          echo "Directorio real del firmware de la Pico seleccionado: $FW_DIR"
           cd "$FW_DIR"
+          
           mkdir -p build
           cd build
           cmake -DPICO_SDK_PATH=/opt/pico-sdk -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
           make -j$(nproc)
           
-          # Regresar de forma absoluta a la raíz del workspace y copiar el .uf2
+          # Copiar el archivo .uf2 resultante a la carpeta de salida
           cd ${{ github.workspace }}
           mkdir -p firmware_output
           echo "Buscando archivos .uf2 generados..."
