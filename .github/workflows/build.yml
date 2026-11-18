@@ -1,4 +1,4 @@
-name: Build firmware 10.5
+name: Build firmware 10.7
 on:
   workflow_dispatch:
   push:
@@ -34,7 +34,7 @@ jobs:
           cp $RUNNER_TEMP/pioasm-build/pioasm $PICO_SDK_PATH/tools/pioasm/pioasm
           ls -l $PICO_SDK_PATH/tools/pioasm/pioasm
           
-            - name: Compilar e instalar picotool
+      - name: Compilar e instalar picotool
         run: |
           git clone --depth 1 --branch 2.1.0 https://github.com/raspberrypi/picotool.git $RUNNER_TEMP/picotool
           cmake -S $RUNNER_TEMP/picotool -B $RUNNER_TEMP/picotool-build \
