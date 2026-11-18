@@ -1,4 +1,4 @@
-name: Build firmware v10.1
+name: Build firmware 10.2
 on:
   workflow_dispatch:
   push:
@@ -19,15 +19,24 @@ jobs:
             libstdc++-arm-none-eabi-newlib
 
       - name: Descargar Pico SDK
-        run: git clone --recurse-submodules https://github.com/mjrgh/pico-sdk-2.1.0.git $HOME/pico-sdk
+        run: |
+          git clone --recurse-submodules https://github.com/mjrgh/pico-sdk-2.1.0.git $HOME/pico-sdk
+          echo "PICO_SDK_PATH=$HOME/pico-sdk" >> $GITHUB_ENV
 
-      - name: Compilar
+      - name: Compilar pioasm
+        run: |
+          cmake -S $PICO_SDK_PATH/tools/pioasm -B $RUNNER_TEMP/pioasm-build
+          cmake --build $RUNNER_TEMP/pioasm-build -j4
+          cp $RUNNER_TEMP/pioasm-build/pioasm $PICO_SDK_PATH/tools/pioasm/pioasm
+          ls -l $PICO_SDK_PATH/tools/pioasm/pioasm
+
+      - name: Compilar firmware
         working-directory: Firmware
         run: |
-          cmake . -DPICO_SDK_PATH=$HOME/pico-sdk
+          cmake .
           make -j4
 
       - uses: actions/upload-artifact@v4
         with:
           name: PinscapePico-uf2
-          path: firmware/*.uf2
+          path: Firmware/*.uf2
